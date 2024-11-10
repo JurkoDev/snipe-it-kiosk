@@ -4,7 +4,11 @@
       <b-col :sm="8">
         <b-table :fields="this.fields" striped :items="this.items">
           <template #cell(asset)="data">
-            {{ data.item.manufacturer.name + " " + data.item.model.name }}
+            {{
+              this.asset.manufacturer == null
+                ? "empty manufacturer"
+                : this.asset.manufacturer.name + " " + data.item.model.name
+            }}
           </template>
 
           <template #cell(state)="data">
@@ -66,7 +70,7 @@ export default {
         } else {
           let i = this.items.push({ ...resp, state: 0 }) - 1;
           this.$apiCalls()
-            .auditAssetByTag(resp)
+            .auditAssetByTag(resp.asset_tag)
             .then((payload) => {
               this.items[i].state = payload;
             });

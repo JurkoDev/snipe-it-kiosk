@@ -28,7 +28,7 @@ export default {
         .then((resp) => {
           console.log(resp);
           this.$store.commit("login", resp.data);
-          return this.$apiCall("GET", "/users/me");
+          return this.$apiCall("GET", "/api/v1/users/me");
         })
         .then((resp) => {
           this.$store.commit("setUser", {

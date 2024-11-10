@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>{{ this.asset.manufacturer.name }} {{ this.asset.model.name }}</h2>
+    <h2>{{ this.asset.manufacturer == null ? "empty manufacturer" : this.asset.manufacturer.name }} {{ this.asset.model.name }}</h2>
     <b-row class="mt-4" v-if="this.checkState == 0">
       <b-col>
         <b-table :items="items">
@@ -145,7 +145,7 @@ export default {
       }
       this.checkState = 1;
       this.$apiCalls()
-        .checkoutAssetByTag(this.asset.asset_tag, id)
+        .checkoutAssetByTag(this.asset.id, id)
         .then(() => {
           this.checkState = 2;
           setTimeout(() => {
@@ -161,8 +161,9 @@ export default {
     checkin: function () {
       this.checkState = 1;
       this.$apiCalls()
-        .checkinAssetByTag(this.asset.asset_tag)
+        .checkinAssetByTag(this.asset.id)
         .then((resp) => {
+          console.log(resp);
           this.locationOnCheckin = resp.location ? resp.location.name : null;
           this.checkState = 3;
           setTimeout(() => {

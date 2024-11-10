@@ -12,6 +12,7 @@ function install(Vue) {
     }).then((resp) => {
       if (resp.data.status != null) {
         if (resp.data.status == "error") {
+          console.log(resp);
           throw new Error(resp);
         }
       }
@@ -22,7 +23,21 @@ function install(Vue) {
     let self = this;
     return {
       getAssetByTag: function (tag) {
-        return self.$apiCall("GET", "/hardware/bytag/" + tag).then((resp) => {
+        return self
+          .$apiCall("GET", "/api/v1/hardware/bytag/" + tag)
+          .then((resp) => {
+            resp.data.status_label.__deployable = true;
+            if (
+              resp.data.status_label.status_meta == "deployed" ||
+              resp.data.status_label.status_meta == "undeployable"
+            ) {
+              resp.data.status_label.__deployable = false;
+            }
+            return resp.data;
+          });
+      },
+      getAssetByID: function (id) {
+        return self.$apiCall("GET", "/api/v1/hardware/" + id).then((resp) => {
           resp.data.status_label.__deployable = true;
           if (
             resp.data.status_label.status_meta == "deployed" ||
@@ -35,7 +50,7 @@ function install(Vue) {
       },
       checkoutAssetByTag: function (tag, userId) {
         return self
-          .$apiCall("POST", "/hardware/" + tag + "/checkout", {
+          .$apiCall("POST", "/api/v1/hardware/" + tag + "/checkout", {
             checkout_to_type: "user",
             assigned_user: userId,
           })
@@ -48,17 +63,18 @@ function install(Vue) {
       },
       checkinAssetByTag: function (tag) {
         return self
-          .$apiCall("POST", "/hardware/" + tag + "/checkin")
+          .$apiCall("POST", "/api/v1/hardware/" + tag + "/checkin")
           .then((resp) => {
             if (resp.data.status == "success") {
-              return this.getAssetByTag(tag);
+              return this.getAssetByID(tag);
             }
+            console.log(resp);
             throw new Error(resp);
           });
       },
       auditAssetByTag: function (tag) {
         return self
-          .$apiCall("POST", "/hardware/audit", {
+          .$apiCall("POST", "/api/v1/hardware/audit", {
             asset_tag: tag,
           })
           .then((resp) => {
@@ -69,7 +85,7 @@ function install(Vue) {
           });
       },
       getAllUsers: function () {
-        return self.$apiCall("GET", "/users").then((resp) => {
+        return self.$apiCall("GET", "/api/v1/users").then((resp) => {
           if (resp.data.total != null) {
             return resp.data;
           }
