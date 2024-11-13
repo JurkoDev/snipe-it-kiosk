@@ -1,6 +1,13 @@
 <template>
   <div>
-    <h2>{{ this.asset.manufacturer == null ? "empty manufacturer" : this.asset.manufacturer.name }} {{ this.asset.model.name }}</h2>
+    <h2>
+      {{
+        this.asset.manufacturer == null
+          ? "empty manufacturer"
+          : this.asset.manufacturer.name
+      }}
+      {{ this.asset.model.name }}
+    </h2>
     <b-row class="mt-4" v-if="this.checkState == 0">
       <b-col>
         <b-table :items="items">
@@ -63,7 +70,14 @@
         >
           Back
         </Button>
-        <UserSelector class="mt-2" @user="(id) => checkout(id)" />
+        <UserSelector
+          class="mt-2"
+          @user="
+            (id) => {
+              checkout(id);
+            }
+          "
+        />
       </b-col>
     </b-row>
     <b-row v-if="this.checkState != 0">
@@ -144,19 +158,45 @@ export default {
         this.selectedUser = user;
       }
       this.checkState = 1;
-      this.$apiCalls()
-        .checkoutAssetByTag(this.asset.id, id)
-        .then(() => {
-          this.checkState = 2;
-          setTimeout(() => {
-            this.$router.push("/scan");
-          }, 1000);
+      
+      if (user == null) {
+        this.$apiCalls()
+          .checkoutAssetByTag(this.asset.id, id)
+          .then(() => {
+            this.checkState = 2;
+            setTimeout(() => {
+              this.$router.push("/scan");
+            }, 1000);
 
-          return;
-        })
-        .catch(() => {
-          this.checkState = 4;
-        });
+            return;
+          })
+          .catch(() => {
+            this.checkState = 4;
+          });
+      } else {
+        this.$apiCalls()
+          .checkinAssetByTag(this.asset.id)
+          .then(() => {
+            this.$apiCalls()
+              .checkoutAssetByTag(this.asset.id, id)
+              .then(() => {
+                this.checkState = 2;
+                setTimeout(() => {
+                  this.$router.push("/scan");
+                }, 1000);
+
+                return;
+              })
+              .catch(() => {
+                this.checkState = 4;
+              });
+
+            return;
+          })
+          .catch(() => {
+            this.checkState = 4;
+          });
+      }
     },
     checkin: function () {
       this.checkState = 1;
