@@ -24,7 +24,7 @@ function install(Vue) {
     return {
       getAssetByTag: function (tag) {
         return self
-          .$apiCall("GET", "/api/v1/hardware/bytag/" + tag)
+          .$apiCall("GET", "/api/v1/hardware/" + tag)
           .then((resp) => {
             resp.data.status_label.__deployable = true;
             if (
